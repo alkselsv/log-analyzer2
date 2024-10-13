@@ -7,6 +7,7 @@ import random  # Для тестирования
 import numpy as np
 import pandas as pd
 from logger import init_stream_logger
+from datetime import datetime
 
 
 class Predictor:
@@ -28,7 +29,7 @@ class Predictor:
 
         while True:
             (
-                sessions, ip, data
+                sessions, ips, timestamps, data
             ) = self.preproccessor.proccess_data(log_file)
 
             if len(data):
@@ -47,10 +48,13 @@ class Predictor:
                 # df_out["user_agent"] = user_agents
                 # df_out["prob"] = np.round(predictions, 2)
 
-                df_out = pd.DataFrame(columns=["prob", "ip", "session"])
-                df_out["session"] = sessions
-                df_out["ip"] = ip
+                df_out = pd.DataFrame(columns=["date", "ip", "prob", "user_agent", "session"])
+                df_out["date"] = pd.to_datetime(timestamps, unit='s')
+                df_out["ip"] = ips
                 df_out["prob"] = np.round(predictions, 2)
+                df_out["user_agent"] = "user_agent"
+                df_out["session"] = sessions
+
 
                 # Для тестирования
                 # predictions = [random.random()

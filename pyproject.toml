@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "log-analyzer2"
+name = "log-analyzer-v2"
 version = "0.1.0"
 description = ""
 authors = ["Aleksey Eliseev <alekseyeliseev@ya.ru>"]

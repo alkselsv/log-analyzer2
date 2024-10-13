@@ -39,7 +39,8 @@ class Preprocessor:
         res = {}
         res['session_id'] = session_id
 
-        ip = []
+        ips = []
+        timestamps = []
 
         mousemove_prm_data_b_n = []
         mousemove_prm_data_b_ms = []
@@ -95,7 +96,8 @@ class Preprocessor:
             if record['type'] == 'METRIK':
                 if record['act'] == 'move':
 
-                    ip.append(record['ip'])
+                    ips.append(record['ip'])
+                    timestamps.append(record['ts'])
 
                     mousemove_prm_data = record['prm']['data']
 
@@ -158,7 +160,8 @@ class Preprocessor:
                         mousemove_prm_data_u2_mx.append(mousemove_prm_data['u2']['mx'][0])
                         mousemove_prm_data_u2_gr.append(mousemove_prm_data['u2']['gr'][0])
 
-        res['ip'] = ip[0]
+        res['ip'] = ips[0]
+        res['timestamp'] = timestamps[0]
 
         # mousemove_prm_data_b_ms
         res['mousemove_prm_data_b_ms_min'] = self.get_min(mousemove_prm_data_b_ms)
@@ -449,10 +452,11 @@ class Preprocessor:
         """Выполняет создание новых признаков"""
         df = pd.DataFrame.from_dict(data)
         df.fillna(0, inplace=True)
-        session = df.get(df.columns[0])
-        ip = df.get(df.columns[1])
-        dataframe = df.get(df.columns[2:])
-        return session, ip, dataframe
+        sessions = df.get(df.columns[0])
+        ips = df.get(df.columns[1])
+        timestamps =  df.get(df.columns[2])
+        dataframe = df.get(df.columns[3:])
+        return sessions, ips, timestamps, dataframe
 
     def proccess_data(self, file):
         """Запускает процесс обработки данных"""
@@ -464,10 +468,9 @@ class Preprocessor:
             self.logger.info("Sessions preproccessed")
 
             (
-                sessions, ip, dataset
+                sessions, ips, timestamps, dataset
             ) = self._postproccess_data(dataset)
             self.logger.info("Sessions postproccessed")
         else:
-            sessions, ip, dataset = [], [], []
-        # return dataframe, timestamps, ip_addrs, sessions, user_agents
-        return sessions, ip, dataset
+            sessions, ips, timestamps, dataset = [], [], [], []
+        return sessions, ips, timestamps, dataset

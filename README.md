@@ -1,7 +1,7 @@
 ## Запуск приложения
 
 ```bash
-python main.py --root_dir ./users --models_dir ./models --period 60
+python ./src/main.py --root_dir ./users --models_dir ./models --period 60
 
 Options
   -h, --help                show this help message and exit
