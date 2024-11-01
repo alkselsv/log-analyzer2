@@ -8,35 +8,42 @@ import numpy as np
 import pandas as pd
 from logger import init_stream_logger
 from datetime import datetime
+from log_scanner import LogScanner
+from preproccessor import Preprocessor
+from logging import Logger
 
 
 class Predictor:
     """Возвращает предсказания модели"""
 
     def __init__(
-        self, scanner=None, preproccessor=None, models_dir="models", period=60, logger=None
-    ):
-        self.scanner = scanner
-        self.preproccessor = preproccessor
-        self.models_dir = models_dir
-        self.period = period
-        self.logger = logger
+        self,
+        scanner: LogScanner | None = None,
+        preproccessor: Preprocessor | None = None,
+        models_dir: str = "models",
+        period: int = 60,
+        logger: Logger | None = None,
+    ) -> None:
+        self.scanner: LogScanner | None = scanner
+        self.preproccessor: Preprocessor | None = preproccessor
+        self.models_dir: str = models_dir
+        self.period: int = period
+        self.logger: Logger | None = logger
 
-    def _predict(self, model, log_file, min_bound):
+    def _predict(self, model, log_file: str, min_bound: float) -> None:
         """Выполняет предсказание"""
 
         self.logger.info("Prediction process starts")
 
         while True:
-            (
-                sessions, ips, timestamps, data
-            ) = self.preproccessor.proccess_data(log_file)
+            (sessions, uas, ips, timestamps, data) = self.preproccessor.proccess_data(
+                log_file
+            )
 
             if len(data):
                 self.logger.debug(f"Prepared records for predictions: {len(data)}")
                 try:
-                    predictions = model.predict_proba(
-                        np.array(data))[:, 1]
+                    predictions = model.predict_proba(np.array(data))[:, 1]
                     self.logger.debug("Prediction made")
                 except Exception as e:
                     self.logger.error(f"Prediction error: {e}")
@@ -48,13 +55,14 @@ class Predictor:
                 # df_out["user_agent"] = user_agents
                 # df_out["prob"] = np.round(predictions, 2)
 
-                df_out = pd.DataFrame(columns=["date", "ip", "prob", "user_agent", "session"])
-                df_out["date"] = pd.to_datetime(timestamps, unit='s')
+                df_out = pd.DataFrame(
+                    columns=["date", "ip", "prob", "user_agent", "session"]
+                )
+                df_out["date"] = pd.to_datetime(timestamps, unit="s")
                 df_out["ip"] = ips
                 df_out["prob"] = np.round(predictions, 2)
-                df_out["user_agent"] = "user_agent"
+                df_out["user_agent"] = uas
                 df_out["session"] = sessions
-
 
                 # Для тестирования
                 # predictions = [random.random()
@@ -74,7 +82,7 @@ class Predictor:
 
             time.sleep(self.period)
 
-    def _worker(self, args):
+    def _worker(self, args: tuple[str, str, float]) -> None:
         """Вспомогательная функция, которая разбирает аргументы"""
 
         model_name, log_file, min_bound = args
@@ -96,7 +104,7 @@ class Predictor:
 
         return self._predict(model, log_file, min_bound)
 
-    def start(self):
+    def start(self) -> None:
         """Запускает процесс предсказания"""
 
         models_names = self.scanner.get_models()

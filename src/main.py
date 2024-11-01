@@ -31,10 +31,10 @@ if __name__ == "__main__":
     logger.info("App starts")
 
     # Установка путей
-    root_dir = args.root_dir
-    models_dir = args.models_dir
+    root_dir: str = args.root_dir
+    models_dir: str = args.models_dir
     # Определение периода
-    period = args.period
+    period: int = args.period
 
     logger.info(f"Root dir: {root_dir}")
     logger.info(f"Models dir: {models_dir}")
